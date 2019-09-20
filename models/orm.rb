@@ -14,14 +14,23 @@ module Persistable
         def has_id?()
            instance_variable_defined?(:@id) 
         end
+
+        def generate_hexa()
+            hexa = ""
+            #convert string to integer to remove blank space
+            while hexa.to_i.to_s.length != 4 do 
+                hexa = "%4x" % (rand * 0xffff)
+            end
+            hexa
+        end
         
         def save!()
             if !has_id?
                 self.class.attr_accessor :id
-                one = "%4x" % (rand * 0xffff)
-                two = "%4x" % (rand * 0xffff)
-                three = "%4x" % (rand * 0xffff)
-                four = "%4x" % (rand * 0xffff)
+                one = generate_hexa
+                two = generate_hexa
+                three = generate_hexa
+                four = generate_hexa
                 random = "#{one}-#{two}-#{three}-#{four}" 
                 self.instance_variable_set(:@id, random)
             end
