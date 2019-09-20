@@ -1,1 +1,2 @@
 gem 'tadb'
+gem 'rspec'

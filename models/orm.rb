@@ -41,13 +41,37 @@ module Persistable
         end
     end
 
+    module Search
+        def all_instances()
+            instances = []
+            ObjectSpace.each_object(self.class) do
+                |obj|
+                if obj.instance_variable_defined?(:@id) 
+                    instances << obj
+                end
+            end
+            instances
+        end
+
+        def find_by_type(symbol, *args)
+            symbol = symbol.to_s.sub!(/^find_by_/, "@")
+            if !instance_variable_defined?(symbol)
+                raise 'The object does not have that attribute'
+            end
+            puts symbol
+            puts *args
+        end
+    end
+
 end
 
 class Class
-    def method_missing(symbol, a, b)
+    def method_missing(symbol, *args, &block)
         if symbol == :has_one
             instance_eval {|obj| obj.singleton_class.include Persistable::Has}
-            self.send symbol, a, b
+            instance_eval {|obj| obj.include Persistable::Save}
+            instance_eval {|obj| obj.include Persistable::Search}
+            self.send symbol, *args
         else
           super
         end
@@ -55,19 +79,13 @@ class Class
 end
 
 class Object
-    include Persistable::Save
+    def method_missing(symbol, *args, &block)
+        if symbol.to_s.start_with?("find_by")
+            find_by_type(symbol, *args)
+        else
+            super
+        end 
+    end
 end
 
-puts TADB::DB.respond_to?(:clear_all)
-puts Class.respond_to?(:has_one)
-puts Object.respond_to?(:save!)
-
-class User
-    has_one String, named: :name
-end
-
-u = User.new
-u.name = 'test_name'
-u.save!
-puts u.id
-ObjectSpace.each_object(Persistable::Has) {|x| puts x.to_s}
+Object.const_set("Boolean", true)
