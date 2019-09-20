@@ -1,0 +1,12 @@
+GEM
+  specs:
+    tadb (0.3.3)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  tadb
+
+BUNDLED WITH
+   1.16.1
