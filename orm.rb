@@ -1,5 +1,6 @@
 #!/usr/bin/ruby
 require 'tadb'
+require 'objspace'
 
 module Persistable
 
@@ -43,7 +44,14 @@ module Persistable
 end
 
 class Class
-    include Persistable::Has
+    def method_missing(symbol, a, b)
+        if symbol == :has_one
+            instance_eval {|obj| obj.singleton_class.include Persistable::Has}
+            self.send symbol, a, b
+        else
+          super
+        end
+    end
 end
 
 class Object
@@ -62,3 +70,4 @@ u = User.new
 u.name = 'test_name'
 u.save!
 puts u.id
+ObjectSpace.each_object(Persistable::Has) {|x| puts x.to_s}
